@@ -34,7 +34,7 @@ struct CommandCodeProviderTests {
         #expect(descriptor.metadata.weeklyLabel == "Weekly")
         #expect(descriptor.metadata.opusLabel == "Monthly")
         #expect(descriptor.metadata.supportsOpus)
-        #expect(descriptor.fetchPlan.sourceModes == [.auto, .web])
+        #expect(descriptor.fetchPlan.sourceModes == [.auto, .api, .web])
     }
 
     @Test
