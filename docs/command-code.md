@@ -1,5 +1,5 @@
 ---
-summary: "Command Code provider notes: cookie authentication and usage-window parsing."
+summary: "Command Code provider notes: API key and cookie authentication, usage-window parsing."
 read_when:
   - Debugging Command Code cookie import or usage parsing
   - Updating Command Code billing or credit display
@@ -13,15 +13,25 @@ to your other AI coding providers.
 
 ## Data source
 
-- `https://api.commandcode.ai` billing endpoints, authenticated with the
-  signed-in Command Code web session.
+- `https://api.commandcode.ai` billing endpoints: `/alpha/billing/*` with a
+  Command Code API key (the routes the `cmd` CLI uses), or `/internal/billing/*`
+  with the signed-in Command Code web session.
 - The provider reads 5-hour and weekly rolling limits alongside monthly credit
   usage, plan allowance, remaining credits, and billing-cycle reset timing when
   the account data is available.
 
 ## Authentication
 
-Command Code support uses browser cookies or a manually pasted cookie header.
+Command Code support uses an API key, browser cookies, or a manually pasted cookie header.
+Usage source `Auto` tries the API key first and falls back to cookies when no key is configured.
+
+### API key
+
+Paste a `user_...` key into Settings -> Providers -> Command Code -> API key (stored as `apiKey`
+in `~/.codexbar/config.json`), or set `COMMAND_CODE_API_KEY`. `cmd login` stores the key in
+`~/.commandcode/auth.json`. This path works on Linux without a cookie.
+
+### Cookies
 
 1. Sign in to `https://commandcode.ai` in a supported browser.
 2. Open Settings -> Providers -> Command Code.
