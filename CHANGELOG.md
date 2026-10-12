@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.74.1 — Unreleased
+## 0.74.2 — Unreleased
+
+## 0.74.1 — 2026-10-11
 
 ### Added
 
@@ -14,10 +16,12 @@
 
 ### Fixed
 
+- Antigravity: stop `agy` usage refreshes from opening browser sign-in when saved authentication cannot refresh silently, while preserving background quota recovery (#4441, #4451, #4446). Thanks @deven367, @davisonio, and @Yuxin-Qiao!
 - Usage & Spend: stop Codex status and activity read caches from retaining per-file request ledgers, reducing memory on large histories while preserving report turn performance (#4421, #4424). Thanks @harjothkhara and @Edenspiekermann-Chris!
 - Command Code: support Go v1’s $10 monthly grant and preserve API usage and the plan label for unknown subscriptions (#4405). Thanks @dalisoft!
 - OpenCode Go: mark estimated menu-bar percentages with `~` and clarify that local cost ratios do not establish account quota (#4410). Thanks @djbclark!
 - Menu bar: stop the blank Settings placeholder window from appearing on launch (regression in 0.74.0) (#4415). Thanks @tcurdt, @ChuJiannn11 and @kcharlan!
+- Claude: show prepaid Usage credits in custom menu bar Balance layouts and USD balance conditionals while preserving quota text and the optional credits setting (#4422). Thanks @lg!
 - Packaging: preserve the selected macOS SDK in app and helper binaries so newer macOS versions use current native UI metrics, while retaining macOS 14 support (#4403). Thanks @Yuxin-Qiao!
 - Replicate: use the official provider glyph across the app, website, and HTTP dashboard; refresh the dashboard’s bundled provider icons (#4411). Thanks @giuseppebisemi!
 
