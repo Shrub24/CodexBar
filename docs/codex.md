@@ -358,6 +358,12 @@ For a manual comparison with another development machine, run `codexbar cost --p
 Both hosts scan their own native Codex logs once and return separate summaries, retaining their own day boundaries,
 pricing provenance, missing values, and incomplete-request counts. Only bounded totals cross SSH. A remote error keeps
 the local result and returns a nonzero exit code. See [CLI host reporting](cli.md) for the versioned summary contract.
+
+For copied or resumed histories, `cost --provider codex --identified-only --format json --remote <ssh-host>`
+reports an **identified-request subtotal** over one UTC window. Strong native session/response identities are
+deduplicated; conflicting identities and legacy/unidentified usage are excluded and reported. Combined prices are
+unavailable (`costUSD: null`). This opt-in CLI mode does not change ordinary cost reports or account quota.
+
 - Menu source selection:
   - By default, a selected managed account keeps its own `CODEX_HOME` session history.
   - **Local session cost estimates** is a Codex-only opt-in that instead scans this Mac's ambient `$CODEX_HOME`
@@ -453,6 +459,8 @@ the local result and returns a nonzero exit code. See [CLI host reporting](cli.m
     External writes invalidate cached data; database replacement or incompatible metadata reopens the reader through
     existing validation on its next access. Every read still reconciles file identities, and detailed report history
     remains transient. Scanner and writer connections keep separate ownership.
+    Status and activity views omit per-file request ledgers to reduce retained memory. Detailed reports, scanner
+    reconciliation, and persisted caches keep the ledger, including native turn-performance data.
   - Cached Codex rows share byte-identical turn-ID strings within each read, reducing retained memory for repeated turns.
     The temporary string index ends with that read; persisted row values, Unicode spellings, and pricing stay unchanged.
   - Report, scan-baseline, and workspace reads decode stored usage rows as SQLite yields them, avoiding a second copy of the
@@ -482,6 +490,19 @@ the local result and returns a nonzero exit code. See [CLI host reporting](cli.m
     requests are never estimated from current list prices or folded into an aggregate estimate, and the partial group
     has no Standard/Priority split. A day with any unpriced model or request reports `unpricedRequestCount`, so Usage &
     Spend and the CLI show its cost as a partial estimate. Fully priced days keep the day-level coverage count.
+  - [OpenAI's Help Center](https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan)
+    says Auto-review safety checks are free and do not count toward plan limits when signed in with ChatGPT.
+    CodexBar assumes an effective cutoff of `2026-10-06T07:00:00Z` (midnight US Pacific), based on the
+    [reported October 6 announcement](https://nerdschalk.com/codex-auto-review-is-now-free-for-chatgpt-sign-ins/);
+    OpenAI's policy page does not specify the date, and earlier requests keep their previous pricing.
+    A `codex-auto-review` request at or after the cutoff is priced at $0 when its rollout's leaf `session_meta`
+    has a non-blank `creator_account_id`. [Upstream documents this field](https://github.com/openai/codex/blob/27065a91ccbf5ba8532844be3777fcf83b77820d/codex-rs/protocol/src/protocol.rs#L3249)
+    as the account selected at thread creation, unchanged on resume, so a ChatGPT-created session later resumed
+    with an API key still counts Auto-review at $0. Tokens remain in all totals; missing eligibility or unreliable
+    request evidence keeps previous pricing. The free price overrides catalog estimates; explicit
+    custom-pricing rates and saved monetary amounts still win. Classification affects report copies only. Parser revision 13 reparses files
+    through the normal scan budget to capture the flag; stores from `f406dae284de4a55` retain saved history and
+    checkpoints without a rebuild. Workspaces/Models analytics use a sidecar without this flag and remain unpriced.
   - Fully read empty session fragments retain completion records even when another file contributes the same session.
     They contribute no usage and reparse from the start if they grow. Usage-bearing duplicates and incomplete fragments
     keep their existing accounting and retry rules. Existing 0.56.4 cost caches are adopted without rebuilding
@@ -602,7 +623,11 @@ beneath it. Untitled sessions use a shortened session ID. Titles come from `sess
 thread database as a fallback; relative `CODEX_SQLITE_HOME` paths resolve against each rollout's original working
 directory, even when its project is grouped under a different canonical repository path.
 
-Rows rank by cost descending, with unpriced sessions last. Ties use tokens descending, activity time descending,
+The menu's **Cost → Conversations** rows also use these saved titles, with the shortened session ID available
+in the row tooltip. Missing or blank titles keep the existing `Session <id>` label. **Hide personal information**
+uses that same ID label; no new scans or metadata stores are needed for menu titles.
+
+Usage & Spend rows rank by cost descending, with unpriced sessions last. Ties use tokens descending, activity time descending,
 and source-qualified session ID ascending. The panel initially shows eight rows and can expand to the top 50.
 Dates use the dashboard's cost-bucketing time zone. Naming and ranking leave daily totals, the ledger, and existing
 per-session costs unchanged; an unpriced session remains unpriced, and a partially priced session shows the subtotal

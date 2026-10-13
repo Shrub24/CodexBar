@@ -23,7 +23,7 @@ struct CommandCodeProviderImplementation: ProviderImplementation {
             ProviderSettingsPickerDescriptor(
                 id: "commandcode-usage-source",
                 title: "Usage source",
-                subtitle: "Auto tries the API key, then browser cookies.",
+                subtitle: "Auto uses an API key when configured, otherwise browser cookies.",
                 binding: context.rawValueBinding(\.commandcodeUsageDataSource, fallback: .auto),
                 options: [
                     ProviderSettingsPickerOption(id: ProviderSourceMode.auto.rawValue, title: "Auto"),
@@ -53,9 +53,9 @@ struct CommandCodeProviderImplementation: ProviderImplementation {
             ProviderSettingsFieldDescriptor(
                 id: "commandcode-api-key",
                 title: "API key",
-                subtitle: "Stored in ~/.codexbar/config.json. You can also set COMMAND_CODE_API_KEY.",
+                subtitle: "Stored in the CodexBar config file. You can also set COMMAND_CODE_API_KEY.",
                 kind: .secure,
-                placeholder: "user_...",
+                placeholder: "API key",
                 binding: context.binding(\.commandcodeAPIKey),
                 actions: [],
                 isVisible: { context.settings.commandcodeUsageDataSource != .web }),

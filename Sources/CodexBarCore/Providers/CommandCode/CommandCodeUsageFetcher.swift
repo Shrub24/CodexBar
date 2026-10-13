@@ -302,8 +302,7 @@ public enum CommandCodeUsageFetcher {
             throw CommandCodeUsageError.invalidCredentials
         }
         guard (200..<300).contains(response.statusCode) else {
-            let body = String(data: response.data, encoding: .utf8) ?? ""
-            Self.log.error("CommandCode \(url.path) → \(response.statusCode): \(body)")
+            Self.log.error("CommandCode \(url.path) → \(response.statusCode)")
             throw CommandCodeUsageError.apiError(response.statusCode)
         }
         return response.data

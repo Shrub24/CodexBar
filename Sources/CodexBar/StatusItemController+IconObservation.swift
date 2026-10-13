@@ -104,7 +104,7 @@ extension StatusItemController {
         let selections = Set(resolution.layout
             .flattenedTokens(conditionals: self.settings.menuBarLayoutConditionals).compactMap(\.resetWindow))
         guard !selections.isEmpty else { return nil }
-        let windows = self.menuBarLayoutWindows(provider: provider, snapshot: snapshot, now: Date())
+        let windows = self.store.menuBarLayoutWindows(provider: provider, snapshot: snapshot, now: Date())
         var hasher = Hasher()
         for selection in PercentWindow.allCases where selections.contains(selection) {
             let window = windows.resetWindow(selection, snapshot: snapshot)
@@ -139,7 +139,7 @@ extension StatusItemController {
         let tokens = resolution.layout.flattenedTokens(conditionals: self.settings.menuBarLayoutConditionals)
         let metrics = self.referencedConditionalMetrics(resolution: resolution)
         let showsToday = tokens.contains(.costToday) || metrics.contains(.costToday)
-        let showsLast30Days = tokens.contains(.cost30d) || metrics.contains(.cost30d)
+        let showsLast30Days = tokens.contains(.costWindow) || metrics.contains(.costWindow)
         guard showsToday || showsLast30Days else { return nil }
 
         let costs = self.menuBarLayoutCosts(provider: provider)
@@ -149,7 +149,7 @@ extension StatusItemController {
             // Predicates compare the unrounded amounts, and two token-cost updates can cross a
             // threshold while both format to the same cent, so a conditional also signs the numbers.
             "todayUSD=\(metrics.contains(.costToday) ? Self.exactSignatureValue(costs.todayUSD) : "unused")",
-            "last30DaysUSD=\(metrics.contains(.cost30d) ? Self.exactSignatureValue(costs.last30DaysUSD) : "unused")",
+            "last30DaysUSD=\(metrics.contains(.costWindow) ? Self.exactSignatureValue(costs.last30DaysUSD) : "unused")",
         ].joined(separator: ",")
     }
 
@@ -167,12 +167,17 @@ extension StatusItemController {
         guard showsBalance else { return nil }
         // The rendered text only carries the remaining row. A `balance used` predicate reads the "Used"
         // row instead, which no display token surfaces, so sign both amounts exactly.
-        let amounts = MenuBarLayoutBalanceResolver.balanceAmountsUSD(provider: provider, snapshot: snapshot)
+        let showsOptionalCredits = self.settings.showOptionalCreditsAndExtraUsage
+        let amounts = MenuBarLayoutBalanceResolver.balanceAmountsUSD(
+            provider: provider,
+            snapshot: snapshot,
+            showsOptionalCredits: showsOptionalCredits)
         let codexCredits = self.menuBarLayoutCodexCredits(provider: provider, snapshot: snapshot)
         let balanceText = MenuBarLayoutBalanceResolver.balance(
             provider: provider,
             snapshot: snapshot,
-            codexCredits: codexCredits)
+            codexCredits: codexCredits,
+            showsOptionalCredits: showsOptionalCredits)
         return [
             "text=\(balanceText ?? "nil")",
             "remaining=\(Self.exactSignatureValue(amounts.remaining))",
@@ -217,7 +222,7 @@ extension StatusItemController {
         guard !paceWindows.isEmpty || needsRunsOut else { return nil }
 
         let now = Date()
-        let windows = self.menuBarLayoutWindows(provider: provider, snapshot: snapshot, now: now)
+        let windows = self.store.menuBarLayoutWindows(provider: provider, snapshot: snapshot, now: now)
         var components = PercentWindow.allCases
             .filter(paceWindows.contains)
             .map { percentWindow in
@@ -271,7 +276,7 @@ extension StatusItemController {
         let extras = MenuBarLayoutRenderExtra.signature(tokens: tokens, provider: provider, snapshot: snapshot)
         guard !lanes.isEmpty || extras != nil else { return nil }
 
-        let windows = self.menuBarLayoutWindows(provider: provider, snapshot: snapshot, now: Date())
+        let windows = self.store.menuBarLayoutWindows(provider: provider, snapshot: snapshot, now: Date())
         let showUsed = self.settings.usageBarsShowUsed
         return MenuBarLayoutLane.allCases
             .filter(lanes.contains)
@@ -302,7 +307,7 @@ extension StatusItemController {
             .filter(\.readsRateWindow)
         guard !metrics.isEmpty else { return nil }
 
-        let windows = self.menuBarLayoutWindows(provider: provider, snapshot: snapshot, now: Date())
+        let windows = self.store.menuBarLayoutWindows(provider: provider, snapshot: snapshot, now: Date())
         let scopedWeekly = MenuBarLayoutSemanticWindowResolver
             .scopedWeeklyNamedWindow(snapshot: snapshot)?.window
         return MenuBarConditionalMetric.allCases

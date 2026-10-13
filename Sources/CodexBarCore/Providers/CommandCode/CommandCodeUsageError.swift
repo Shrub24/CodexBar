@@ -18,7 +18,8 @@ public enum CommandCodeUsageError: LocalizedError, Sendable, Equatable {
         case .missingAPIKey:
             "Command Code API key not found. Set COMMAND_CODE_API_KEY or add a key in Settings."
         case .invalidAPIKey:
-            "Command Code API key is invalid or expired."
+            "Command Code API key is invalid or expired. "
+                + "Replace it in Settings or update COMMAND_CODE_API_KEY."
         case let .networkError(message):
             "Command Code network error: \(message)"
         case let .apiError(status):

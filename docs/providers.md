@@ -8,7 +8,7 @@ read_when:
 
 # Providers
 
-CodexBar currently registers 100 provider IDs. Some companies expose multiple surfaces, such as Codex vs OpenAI API or
+CodexBar currently registers 102 provider IDs. Some companies expose multiple surfaces, such as Codex vs OpenAI API or
 OpenCode vs OpenCode Go, because the auth source and quota shape differ.
 
 ## Fetch strategies (current)
@@ -107,7 +107,7 @@ complete when the available scan window covers fewer days.
 | [Muse (muse.ai)](museai.md) | Browser cookies for `muse.ai` or a manual Cookie header → bundled plugin for the muse.ai weekly Free/Power/Maximum allowance (`web`). |
 | [CodeRabbit](coderabbit.md) | One bounded local CLI usage report for review counts and billing state (`cli`); no quota or balance is inferred. |
 | [Replicate](replicate.md) | Native Chrome cookie candidates or a manual header → bundled plugin for monthly spend and optional prepaid credits (`web`). |
-| [TypeSafe](typesafe.md) | Chrome cookies or a manual header → bundled plugin for billing spend and credit balance (`web`). |
+| [TypeSafe](typesafe.md) | Browser cookies or a manual header → bundled plugin for billing spend and credit balance (`web`). |
 | [Hugging Face](huggingface.md) | Access token from settings/env/CLI → bundled plugin for Inference Providers charges, optional ZeroGPU quota, and token-scoped identity (`api`). |
 | [Raycast](raycast.md) | Chrome cookies for `www.raycast.com` or a manual Cookie header → bundled plugin for monthly AI credits (`web`). |
 | [v0](v0.md) | API key and optional project scope from settings/env → bundled plugin for Platform API billing and rate limits (`api`). |
@@ -128,12 +128,12 @@ complete when the available scan window covers fewer days.
 | Mistral | Console billing, credit balance, and Vibe subscription usage via browser cookies (`web`). |
 | DeepSeek | API key from env or token accounts → balance endpoint (`api`). |
 | [Fireworks](fireworks.md) | API key + account slug → 30-day spend from the billing summary API (`api`). |
-| [Charm Hyper](hyper.md) | Bundled plugin: Chrome/manual session → API key from config or `HYPER_API_KEY` → native HC balance; no inferred quota or reset (`auto`, `web`, `api`). |
+| [Charm Hyper](hyper.md) | Bundled plugin: Chrome/manual dashboard session → API key from config or `HYPER_API_KEY` → native HC balance; no inferred quota or reset (`auto`, `web`, `api`). |
 | DeepInfra | API key from env or token accounts → billing checklist + monthly usage endpoints (`api`). |
 | Moonshot | API key from config/env → balance endpoint (`api`). |
 | Codebuff | API token from config/env or `codebuff login` credentials → usage API (`api`). |
 | Venice | Auto/API: API key from config/env → DIEM/USD balance (`api`). Explicit Web: Chrome or manual cookies → subscription credit details (`web`). |
-| Command Code | Web billing API via Command Code session cookies (`web`). |
+| Command Code | Billing API via API key when configured, otherwise session cookies (`auto`); explicit `api`/`web` pins the source. |
 | ClinePass | API key from config/env or labeled API-key accounts, then the existing `cline auth` session file → 5-hour, weekly, and monthly subscription usage limits (`api`). |
 | Qoder | Browser or manual cookies → big model credit usage (`web`). |
 | StepFun | Username/password login or manual Oasis token (`web`). |
@@ -176,6 +176,8 @@ complete when the available scan window covers fewer days.
 | [Aerostack](aerostack.md) | Explicit account JWT for monthly AI tokens used and the observed account allowance. |
 | [Sail Research](sailresearch.md) | API key for organization credit balance and combined inference/Sailbox spend. |
 | [Sofya](sofya.md) | API key for separate account plan and purchased credit balances, eligibility, and the reported monthly reset. |
+| [fal](fal.md) | API key with billing read access for the current account credit balance. |
+| [FLORA](flora.md) | API key with billing permission plus a workspace ID for the available USD balance and month-to-date spend. |
 
 <!-- End generated provider additions -->
 
@@ -566,8 +568,9 @@ provider-specific cookie validation, endpoints, login detection, and error trans
 - Details: `docs/codebuff.md`.
 
 ## Command Code
-- Browser session cookies from automatic import or manual `Cookie:` header.
-- Linux CLI supports configured manual cookies; automatic browser import remains macOS-only.
+- Auto uses `COMMAND_CODE_API_KEY` or config `apiKey` when set, otherwise browser session cookies from automatic import or a manual `Cookie:` header.
+- Explicit API or web mode pins that source on macOS and Linux.
+- Linux CLI also supports configured manual cookies; automatic browser import remains macOS-only.
 - Reads 5-hour and weekly rolling limits plus monthly USD credits and billing-cycle usage from `api.commandcode.ai`.
 - Automatic import looks for better-auth session cookies from `commandcode.ai` / `www.commandcode.ai`.
 - Debug builds support `COMMANDCODE_API_URL` for synthetic loopback tests; release builds use the official billing endpoint.
